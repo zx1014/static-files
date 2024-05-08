@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            line-height: 1.5;
+        }
+        h2 {
+            margin-bottom: 30px;
+        }
+        form {
+            margin-bottom: 30px;
+        }
+        label {
+            display: inline-block;
+            width: 160px;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box; 
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #img-url {
+            width: calc(100% - 20px);
+            height: 50px;
+            margin-top: 30px;
+        }
+        #qrcode {
+            width: 200px;
+            height: 200px;
+            margin-top: 30px;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <form id="qrForm">
+        <div>
+            <label for="type">选择类型:</label>
+            <br>
+            <input type="radio" id="zoho" name="type" value="zoho" checked>
+            <label for="zoho">Zoho</label>
+            <br>
+            <input type="radio" id="img" name="type" value="img">
+            <label for="img">图床</label>
+            <br>
+            <input type="radio" id="url" name="type" value="url">
+            <label for="url">链接/纯文字</label>
+            <br>
+        </div>
+        <br>
+        <div id="linkPosition">
+            <label for="link">内容:</label>
+            <input type="text" id="link" name="link" value="">
+        </div>
+        <br>
+        <div id="titlePosition">
+            <label for="title">标题(可不填):</label>
+            <input type="text" id="title" name="title" value="">
+        </div>
+        <br>
+        <div id="imgPosition" style="display: none;">
+            <label for="imgTop">图片距离顶部位置:</label>
+            <input type="number" id="imgTop" name="imgTop" value="0">
+        </div>
+        <br>
+        <button type="button" onclick="generateQRCode()">生成二维码</button>
+    </form>
+    <div id="img-url"></div>
+    <button style="display: none;" id="copyBtn" type="button" onclick="copyUrl()">复制生成文字</button>
+    <div id="qrcode"></div>
+    <script>
+        function copyUrl() {
+            var urlDiv = document.getElementById("img-url");
+            copyToClipboard(urlDiv.innerText);
+            alert('复制成功');
+        }
+        function generateQRCode() {
+            var type = document.querySelector('input[name="type"]:checked').value;
+            var link = document.getElementById('link').value;
+            var title = document.getElementById('title').value;
+            var imgTop = document.getElementById('imgTop').value;
+            var qrText = "https://i-zhaoxin.gitee.io/coco/?"
+            if (type === 'zoho') {
+                const regex = /embed\/(.*?)\?/;
+                const result = regex.exec(link);
+                if (result && result[1]) {
+                    link = result[1];
+                }
+                qrText = qrText + "zoho=" + link;
+            }
+            if (type === 'img') {
+                qrText = qrText + "img=" + link;
+                qrText = qrText + "&top=" + imgTop;
+            }
+            if (type == 'url') {
+                qrText = link;
+            }
+            if (title.length !== 0) {
+                qrText = qrText + "&title=" + title;
+            }
+            var urlDiv = document.getElementById("img-url");
+            urlDiv.innerHTML = qrText;
+            hideButton();
+            showButton();
+            // 清空 qrcode div 元素中的内容
+            var qrcodeDiv = document.getElementById("qrcode");
+            qrcodeDiv.innerHTML = "";
+            // 生成并添加到 qrcode div 元素中
+            var qrcode = new QRCode(qrcodeDiv, {
+                text: qrText,
+                width: 200,
+                height: 200
+            });
+        }
+        // 切换输入框展示
+        document.getElementById('img').addEventListener('click', function() {
+            document.getElementById('linkPosition').style.display = 'block';
+            document.getElementById('titlePosition').style.display = 'block';
+            document.getElementById('imgPosition').style.display = 'block';
+        });
+        document.getElementById('zoho').addEventListener('click', function() {
+            document.getElementById('linkPosition').style.display = 'block';
+            document.getElementById('titlePosition').style.display = 'block';
+            document.getElementById('imgPosition').style.display = 'none';
+        });
+        document.getElementById('url').addEventListener('click', function() {
+            document.getElementById('linkPosition').style.display = 'block';
+            document.getElementById('titlePosition').style.display = 'none';
+            document.getElementById('imgPosition').style.display = 'none';
+        });
+        function copyToClipboard(text) {
+            // 创建一个临时的textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            // 将textarea元素添加到文档中
+            document.body.appendChild(textarea);
+            // 选中textarea中的文本
+            textarea.select();
+            // 复制文本到剪贴板
+            document.execCommand('copy');
+            // 移除临时的textarea元素
+            document.body.removeChild(textarea);
+        }
+        // 显示按钮
+        function showButton() {
+            document.getElementById("copyBtn").style.display = "block";
+        }
+        // 隐藏按钮
+        function hideButton() {
+            document.getElementById("copyBtn").style.display = "none";
+        }
+    </script>
+</body>
+</html>
